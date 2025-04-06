@@ -5,7 +5,7 @@ export default function Home() {
     <>
       <div className="text-center">
         <h1 className="mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-          BEAM's Task Manager
+          BEAM Task Manager
         </h1>
         <div>Hi Baby and Emblem!</div>
         <AuthForm />
