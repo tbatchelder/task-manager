@@ -17,6 +17,7 @@
 import React, { useEffect, useState } from "react";
 import { parseJSON } from "../utility/parseJSON";
 import { useRouter } from "next/navigation";
+import { useUserContext } from "../context/UserContext";
 
 interface savedUserTypes {
   username: string;
@@ -37,7 +38,8 @@ const AuthForm = () => {
   // Create some states to store the username, passcode and error
   const [savedUsers, setSavedUsers] = useState<savedUserTypes[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [username, setUserName] = useState<string>("");
+  // const [username, setUserName] = useState<string>("");
+  const { username, setUsername } = useUserContext();
   const [passcode, setPasscode] = useState<string>("");
 
   const router = useRouter();
@@ -76,13 +78,14 @@ const AuthForm = () => {
       (u) => u.username === username && u.passcode === hashedPasscode
     );
     if (!user) {
-      // Clear fields and show error message
-      setUserName("");
-      setPasscode("");
+      // Clear fields and show error message - good idea from AI chat; maybe not clear these out and allow the user to 'correct' them
+      // setUserName("");
+      // setPasscode("");
       setError("Invalid username or passcode");
       return;
     } else {
       console.log("Login successful:", user);
+      setUsername(username); // Set the username context
       setError(null);
       router.push("/tasks"); // Navigate to the next page
     }
@@ -99,7 +102,7 @@ const AuthForm = () => {
             id="username"
             type="text"
             value={username}
-            onChange={(e) => setUserName(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>

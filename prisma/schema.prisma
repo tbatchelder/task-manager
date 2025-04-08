@@ -12,3 +12,28 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  tasks Task[] // Another one-to-many relationship
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(50)
+  description String    @db.Text
+  duedate     DateTime
+  status      Status    @default(OPEN)
+  owner       String    @db.VarChar(25)
+  categoryId  Int
+  category    Category? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum Status {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
