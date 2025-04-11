@@ -22,7 +22,7 @@ const NavBarTask = () => {
 
   const links = [
     { label: "Dashboard", href: "/tasks" },
-    { label: "New", href: "/newtask" },
+    { label: "New", href: "/tasks/newtask" },
     { label: "Edit", href: "#" },
   ];
 
