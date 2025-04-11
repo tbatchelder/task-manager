@@ -1,11 +1,13 @@
 "use client";
 
 import AuthForm from "./components/AuthForm";
+import NavBarLogin from "./components/NavBarLogin";
 import { UserProvider } from "./context/UserContext";
 
 export default function Home() {
   return (
     <>
+      <NavBarLogin />
       <UserProvider>
         <div className="text-center">
           <h1 className="mb-2 mt-0 text-5xl font-medium leading-tight text-primary">

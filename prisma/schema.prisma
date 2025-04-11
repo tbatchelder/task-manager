@@ -16,7 +16,7 @@ datasource db {
 model Category {
   id    Int    @id @default(autoincrement())
   name  String @unique
-  tasks Task[] // Another one-to-many relationship
+  tasks Task[] // A one-to-many relationship
 }
 
 model Task {

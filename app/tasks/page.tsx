@@ -1,7 +1,12 @@
 import React from "react";
+import NavBarTask from "../components/NavBarTask";
 
-const page = () => {
-  return <div>Tasks listings</div>;
+const MainTasks = () => {
+  return (
+    <>
+      <NavBarTask />
+    </>
+  );
 };
 
-export default page;
+export default MainTasks;
