@@ -14,10 +14,13 @@
 
 // We'll work on pretty formatting later on.
 
+// For now, we'll throw in the start of the local storage since we'll want to use this later on in the next few pages.  Best to create it here.
+
 import React, { useEffect, useState } from "react";
 import { parseJSON } from "../utility/parseJSON";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "../context/UserContext";
+import { saveToLocalStorage } from "../utility/saveToLocalStorage";
 
 interface savedUserTypes {
   username: string;
@@ -86,6 +89,7 @@ const AuthForm = () => {
     } else {
       console.log("Login successful:", user);
       setUsername(username); // Set the username context
+      saveToLocalStorage("username", username); // save the username to local storage for the next pages
       setError(null);
       router.push("/tasks"); // Navigate to the next page
     }
