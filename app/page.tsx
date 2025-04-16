@@ -2,7 +2,6 @@
 
 import AuthForm from "./components/AuthForm";
 import NavBarLogin from "./components/NavBarLogin";
-import TableRow from "./components/TableRow";
 import { UserProvider } from "./context/UserContext";
 
 export default function Home() {
@@ -16,13 +15,6 @@ export default function Home() {
           </h1>
           <div>Hi Baby and Emblem!</div>
           <AuthForm />
-          <TableRow
-            id={1}
-            category="Work"
-            name="Task 1"
-            description="Description 1"
-            dueDate="2023-10-01"
-          />
         </div>
       </UserProvider>
     </>
