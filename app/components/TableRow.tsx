@@ -2,8 +2,12 @@
 
 // This component is a table row that displays task information and provides buttons for editing, completing, and deleting tasks. It uses Radix UI icons for the buttons.
 
+// And, from the looks of it, we'll have to break the task icons down into their own components as well, since they are being used in multiple places. So, we'll create a TaskIcon component that will take the owner, status and functionality as a prop and render the appropriate icons.
+
+"use client";
+
 import React from "react";
-import { Pencil1Icon, Cross1Icon, TrashIcon } from "@radix-ui/react-icons";
+import TaskIcons from "./TaskIcons";
 
 interface TableRowProps {
   id: number;
@@ -11,6 +15,12 @@ interface TableRowProps {
   name: string;
   description: string;
   dueDate: string;
+  status: string;
+  owner: string;
+  loggedInOwner: string;
+  onEdit: (id: number) => void;
+  onClose: (id: number) => void;
+  onDelete: (id: number) => void;
 }
 
 const TableRow: React.FC<TableRowProps> = ({
@@ -19,24 +29,38 @@ const TableRow: React.FC<TableRowProps> = ({
   name,
   description,
   dueDate,
+  status,
+  owner,
+  loggedInOwner,
+  onEdit,
+  onClose,
+  onDelete,
 }) => {
+  const rowClass =
+    status === "CLOSED"
+      ? "bg-green-100 font-bold italic"
+      : status === "DELETED"
+      ? "bg-red-100 line-through italic font-bold"
+      : "";
+
   return (
-    <tr className="border-b border-gray-200">
+    <tr className={`border-b hover:bg-gray-100 ${rowClass}`}>
       <td className="px-4 py-2">{id}</td>
       <td className="px-4 py-2">{category}</td>
       <td className="px-4 py-2">{name}</td>
       <td className="px-4 py-2">{description}</td>
       <td className="px-4 py-2">{dueDate}</td>
-      <td className="px-4 py-2 flex space-x-2">
-        <button className="text-blue-500 hover:text-blue-700">
-          <Pencil1Icon />
-        </button>
-        <button className="text-green-500 hover:text-green-700">
-          <Cross1Icon />
-        </button>
-        <button className="text-red-500 hover:text-red-700">
-          <TrashIcon />
-        </button>
+      <td className="px-4 py-2">{status}</td>
+      <td className="px-4 py-2">{owner}</td>
+      <td className="px-4 py-2">
+        <TaskIcons
+          rowOwner={owner}
+          loggedInOwner={loggedInOwner}
+          status={status}
+          onEdit={() => onEdit(id)}
+          onClose={() => onClose(id)}
+          onDelete={() => onDelete(id)}
+        />
       </td>
     </tr>
   );
