@@ -1,27 +1,50 @@
 "use client";
 
+import { useState } from "react";
+import { UserProvider, useUserContext } from "./context/UserContext";
 import AuthForm from "./components/AuthForm";
 import NavBarLogin from "./components/NavBarLogin";
-import { UserProvider } from "./context/UserContext";
+import NavBarTask from "./components/NavBarTask";
+import MainTasks from "./components/MainTasks";
 
 export default function Home() {
+  // Check that the user is logged in first before showing the main task page
+  const { username } = useUserContext();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Callback function to handle successful login
+  // const handleLoginSuccess = (owner: string) => {
+  //   setLoggedInOwner(owner); // Store the logged-in owner's data
+  //   setIsLoggedIn(true); // Update the login state
+  // };
+
   return (
     <>
-      <NavBarLogin />
-      <UserProvider>
-        <div className="text-center">
-          <h1 className="mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-            BEAM Task Manager
-          </h1>
-          <div>Hi Baby and Emblem!</div>
-          <AuthForm />
-        </div>
-      </UserProvider>
+      {/* Conditionally render the appropriate navigation bar and main task page */}
+      {isLoggedIn ? (
+        <>
+          <NavBarTask />
+          <MainTasks />
+        </>
+      ) : (
+        <>
+          <NavBarLogin />
+          <UserProvider>
+            <div className="text-center">
+              <h1 className="mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
+                BEAM Task Manager
+              </h1>
+              {/* Ok, having trouble getting the next page to load the way I want it to.  I want the NavBarTasks to stay since it doesn't change .. but everything keeps arguing with me.  So, AI says I need to link to to the Authform*/}
+              <AuthForm onLoginSuccess={() => setIsLoggedIn(true)} />
+            </div>
+          </UserProvider>
+        </>
+      )}
     </>
   );
 }
 
-// Ok, so what should a simple task manager program have?
+// // Ok, so what should a simple task manager program have?
 // Well, according to the ticket, we need:
 //  A list of all task showing Name, Description and Due Date
 //  Ability to create a new task

@@ -1,5 +1,3 @@
-"use client";
-
 // So, a great deal of this was taken from copilot and Claude AI chats I've been having.  Oddly, these chats with Claude started before I even read what this project was.  I wanted to make a GitHub Page for myself to show off a little ... but I wanted it encrypted too so not just anyone would have access to everything I wanted to show.  So I was looking up how to do that since I couldn't use a database.
 // Aftere thinkning about it, I checked with Claude about using JSON as my "database" and the output looked promising ... so I tried that same approach here.
 // Everything was built up piece by piece.
@@ -15,16 +13,21 @@
 // We'll work on pretty formatting later on.
 
 // For now, we'll throw in the start of the local storage since we'll want to use this later on in the next few pages.  Best to create it here.
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { parseJSON } from "../utility/parseJSON";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useUserContext } from "../context/UserContext";
-import { saveToLocalStorage } from "../utility/saveToLocalStorage";
+// import { saveToLocalStorage } from "../utility/saveToLocalStorage";
 
 interface savedUserTypes {
   username: string;
   passcode: string;
+}
+
+interface AuthFormProps {
+  onLoginSuccess: () => void; // Define the prop for login success callback
 }
 
 // Function to hash passcode using SHA-256
@@ -37,15 +40,14 @@ const hashPasscode = async (passcode: string): Promise<string> => {
     .join("");
 };
 
-const AuthForm = () => {
+const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
   // Create some states to store the username, passcode and error
   const [savedUsers, setSavedUsers] = useState<savedUserTypes[]>([]);
   const [error, setError] = useState<string | null>(null);
-  // const [username, setUserName] = useState<string>("");
   const { username, setUsername } = useUserContext();
   const [passcode, setPasscode] = useState<string>("");
 
-  const router = useRouter();
+  // const router = useRouter();
 
   // This forces the JSON call to occur ONLY once; without this, it would call this on EVERY re-render which is undesirable
   useEffect(() => {
@@ -82,16 +84,14 @@ const AuthForm = () => {
     );
     if (!user) {
       // Clear fields and show error message - good idea from AI chat; maybe not clear these out and allow the user to 'correct' them
-      // setUserName("");
-      // setPasscode("");
       setError("Invalid username or passcode");
       return;
     } else {
       console.log("Login successful:", user);
-      setUsername(username); // Set the username context
-      saveToLocalStorage("username", username); // save the username to local storage for the next pages
+      setUsername(username); // Set the username context - this now updates both local storage and the context
       setError(null);
-      router.push("/tasks"); // Navigate to the next page
+      onLoginSuccess(); // Call the function to handle successful login
+      // router.push("/tasks"); // Navigate to the next page
     }
   };
 
