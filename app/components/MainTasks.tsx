@@ -3,8 +3,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// import { useRouter } from "next/router";
+import { useRouter } from "next/navigation"; // This is compatible with Next.js 13+ and the app directory
 import TableRow from "./TableRow";
+// import { useUserContext } from "../context/UserContext"; // Import the context to get the username
 
 interface Task {
   id: number;
@@ -17,17 +18,17 @@ interface Task {
 }
 
 const MainTasks: React.FC = () => {
-  // const router = useRouter();
+  const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loggedInOwner, setLoggedInOwner] = useState<string>("");
+  const [loggedInUser, setLoggedInUser] = useState<string>("");
 
   // Fetch Owner from local storage
   useEffect(() => {
-    const owner = localStorage.getItem("Owner"); // Assuming "Owner" is the key
-    if (owner) {
-      setLoggedInOwner(owner);
+    const storedUserName = localStorage.getItem("username"); // Assuming "Owner" is the key
+    if (storedUserName) {
+      setLoggedInUser(storedUserName);
     } else {
-      console.error("No Owner found in local storage.");
+      console.error("No username found in local storage.");
     }
   }, []);
 
@@ -51,8 +52,7 @@ const MainTasks: React.FC = () => {
   }, []);
 
   const handleEdit = (id: number, owner: string) => {
-    // router.push(`/edit-task?id=${id}&owner=${owner}`);
-    console.log("hi");
+    router.push(`/newtasks?id=${id}&username=${owner}`); // Dynamic navigation to NewTask
   };
 
   // Function to handle Close action
@@ -119,7 +119,7 @@ const MainTasks: React.FC = () => {
               dueDate={task.dueDate}
               status={task.status}
               owner={task.owner}
-              loggedInOwner={loggedInOwner}
+              loggedInOwner={loggedInUser}
               onEdit={() => handleEdit(task.id, task.owner)}
               onClose={handleClose}
               onDelete={handleDelete}

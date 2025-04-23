@@ -17,11 +17,9 @@
 
 import React, { useEffect, useState } from "react";
 import { parseJSON } from "../utility/parseJSON";
-// import { useRouter } from "next/navigation";
 import { useUserContext } from "../context/UserContext";
-// import { saveToLocalStorage } from "../utility/saveToLocalStorage";
 
-interface savedUserTypes {
+interface SavedUserTypes {
   username: string;
   passcode: string;
 }
@@ -31,6 +29,14 @@ interface AuthFormProps {
 }
 
 // Function to hash passcode using SHA-256
+// This takes a single string and returns a promise that resolves to the hashed value of the passcode
+// The encoder converts the string into a binary format (UTF-8); is is needed for the hashing algorithm to work properly
+// Data converts the string into a binary format (Uint8Array) for the hashing algorithm
+// hashBuffer uses the WebCrypto API to hash the data using SHA-256; this is a built-in function in modern browsers and Node.js; the result is an ArrayBuffer containing the hash
+// This is then converted to a UTF-8 array and then to a regular JavaScript array using Array.from
+// For each byte in the array, we convert it to a hexadecimal string using byte.toString(16) and pad it with 0s to ensure it's two characters long using padStart(2, "0")
+// Finally, we join the array of hexadecimal strings into a single string using join("") to get the final hashed passcode which is 64 character hexadecimal string
+// This is a common hashing algorithm used for password storage and verification; it is secure and widely used in web applications
 const hashPasscode = async (passcode: string): Promise<string> => {
   const encoder = new TextEncoder();
   const data = encoder.encode(passcode);
@@ -42,56 +48,113 @@ const hashPasscode = async (passcode: string): Promise<string> => {
 
 const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
   // Create some states to store the username, passcode and error
-  const [savedUsers, setSavedUsers] = useState<savedUserTypes[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const { username, setUsername } = useUserContext();
-  const [passcode, setPasscode] = useState<string>("");
-
-  // const router = useRouter();
+  // const { username, setUsername } = useUserContext();
+  const { setUsername } = useUserContext();
+  // const [passcode, setPasscode] = useState<string>("");
+  // We need to de-link the form fields from the context so that the onChange event doesn't trigger a re-render of the entire page.  This is causing issues with the form submission and the page reloading.
+  const [tempUsername, setTempUsername] = useState<string>("");
+  const [tempPassword, setTempPassword] = useState<string>("");
+  const [savedUsers, setSavedUsers] = useState<SavedUserTypes[]>([]);
 
   // This forces the JSON call to occur ONLY once; without this, it would call this on EVERY re-render which is undesirable
   useEffect(() => {
-    // Fetch data from the external JSON file
-    const fetchUserData = async () => {
-      try {
-        // By asserting as ...., we are explicityly asserting the type of data being returned by the JSON file
-        const usersData = (await parseJSON("/credentials.json")) as {
-          users: savedUserTypes[];
-        };
-        setSavedUsers(usersData.users);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message); // Set error message if it's an Error instance
-        } else {
-          setError("An unknown error occurred."); // Fallback for unexpected error types
-        }
-      }
+    const setDefaultUserPasscode = async () => {
+      const hashedDefault = await hashPasscode("1234");
+      setSavedUsers([{ username: "test", passcode: hashedDefault }]);
     };
+    setDefaultUserPasscode();
 
-    fetchUserData();
+    // // Fetch data from the external JSON file
+    // const fetchUserData = async () => {
+    //   try {
+    //     // By asserting as ...., we are explicityly asserting the type of data being returned by the JSON file
+    //     const usersData = (await parseJSON("/credentials.json")) as {
+    //       users: savedUserTypes[];
+    //     };
+    //     setSavedUsers(usersData.users);
+    //   } catch (err: unknown) {
+    //     if (err instanceof Error) {
+    //       setError(err.message); // Set error message if it's an Error instance
+    //     } else {
+    //       setError("An unknown error occurred."); // Fallback for unexpected error types
+    //     }
+    //   }
+    // };
+
+    // fetchUserData();
+    // Try to fetch from credentials.json if it exists
+    try {
+      const fetchUserData = async () => {
+        const usersData = (await parseJSON("/credentials.json")) as {
+          users: SavedUserTypes[];
+        };
+        if (usersData && usersData.users && usersData.users.length > 0) {
+          setSavedUsers(usersData.users);
+        }
+      };
+      fetchUserData();
+    } catch (err) {
+      console.log("Using default credentials");
+      // Continue using default credentials
+    }
   }, []);
+
+  const validateCredentials = async (
+    username: string,
+    hashedPasscode: string
+  ): Promise<boolean> => {
+    // Replace this logic with your own credentials validation
+    // const savedUsers = [
+    //   { username: "test", passcode: await hashPasscode("1234") },
+    // ];
+    // return savedUsers.some(
+    //   (u) => u.username === username && u.passcode === hashedPasscode
+    // );
+    return savedUsers.some(
+      (u) => u.username === username && u.passcode === hashedPasscode
+    );
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     // This prevents the page from reloading or going to the action attribute thereby keeping this page visible
     e.preventDefault();
 
     // Hash the passcode entered by the user
-    const hashedPasscode = await hashPasscode(passcode);
+    // const hashedPasscode = await hashPasscode(passcode);
+    const hashedPasscode = await hashPasscode(tempPassword);
+    // const user = await validateCredentials(tempUsername, hashedPasscode);
+    const isValid = await validateCredentials(tempUsername, hashedPasscode);
 
     // This combines the form data for username and passcode into u and then searches the savedUsers array for a combination that matches both
-    const user = savedUsers.find(
-      (u) => u.username === username && u.passcode === hashedPasscode
-    );
-    if (!user) {
-      // Clear fields and show error message - good idea from AI chat; maybe not clear these out and allow the user to 'correct' them
+    // const user = savedUsers.find(
+    //   (u) => u.username === username && u.passcode === hashedPasscode
+    // );
+
+    // if (!user) {
+    //   // Clear fields and show error message - good idea from AI chat; maybe not clear these out and allow the user to 'correct' them
+    //   setError("Invalid username or passcode");
+    //   return;
+    // } else {
+    //   // setUsername(username); // Set the username context - this now updates both local storage and the context
+    //   setUsername(tempUsername);
+    //   localStorage.setItem("username", tempUsername);
+    //   setError(null);
+    //   onLoginSuccess(); // Call the function to handle successful login
+    //   // router.push("/tasks"); // Navigate to the next page
+    // }
+    if (!isValid) {
       setError("Invalid username or passcode");
       return;
     } else {
-      console.log("Login successful:", user);
-      setUsername(username); // Set the username context - this now updates both local storage and the context
+      // Store in Context (for main login flow)
+      setUsername(tempUsername);
+
+      // Also store in localStorage (for new task creation)
+      localStorage.setItem("username", tempUsername);
+
       setError(null);
-      onLoginSuccess(); // Call the function to handle successful login
-      // router.push("/tasks"); // Navigate to the next page
+      onLoginSuccess();
     }
   };
 
@@ -105,8 +168,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
           <input
             id="username"
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            // value={username}
+            // onChange={(e) => setUsername(e.target.value)}
+            // onChange={(e) => setTempUsername(e.target.value)}
+            value={tempUsername}
+            onChange={(e) => setTempUsername(e.target.value)}
             required
           />
         </div>
@@ -116,8 +182,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
           <input
             id="passcode"
             type="password"
-            value={passcode}
-            onChange={(e) => setPasscode(e.target.value)}
+            // value={passcode}
+            // onChange={(e) => setPasscode(e.target.value)}
+            // onChange={(e) => setTempPassword(e.target.value)}
+            value={tempPassword}
+            onChange={(e) => setTempPassword(e.target.value)}
             required
           />
         </div>
@@ -131,3 +200,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
 };
 
 export default AuthForm;
+
+// We had to kick this out of the Router since it's now a component of the main page.  Apparently NextJS does NOT like that.  So, we moved it into a proper component.  I'm not sure this is the intended method for this project but it works so we'll go with it for now.
+// import { useRouter } from "next/navigation";
+// import { saveToLocalStorage } from "../utility/saveToLocalStorage";
+
+// const [savedUsers, setSavedUsers] = useState<savedUserTypes[]>([]);
+// const router = useRouter();

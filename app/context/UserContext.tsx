@@ -1,5 +1,9 @@
-// createContext is the 'storage' for the shared data; it's like a global variable but kept locked within the React act so it doesn't leak into the browser
+// Context allows us to share data across all components in an app without passing it down through props at every level.
+// createContext is the 'storage' for the shared data; it's like a global variable but is kept locked within the React app so it doesn't leak into the browser
 // useContext allows the data to be accessed
+
+"use client";
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 // Create the context
@@ -10,7 +14,7 @@ const UserContext = createContext<{
   username: string;
   setUsername: (username: string) => void;
 }>({
-  username: "", // Default value of the username
+  username: "",
   setUsername: () => {}, // Default updater (does nothing initially)
 });
 
@@ -24,12 +28,31 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [username, setUsername] = useState<string>(() => {
-    return localStorage.getItem("username") || "";
-  }); // Initialize username from local storage or set to empty string
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("username") || "";
+    }
+    return "";
+  });
 
-  // Update local storage whenever the context is updated :: added this after a chat with AI to keep the username in sync with local storage
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     localStorage.setItem("username", username);
+  //   }
+  // }, [username]);
+
+  // useEffect(() => {
+  //   // Persist the username to local storage whenever it changes
+  //   localStorage.setItem("username", username);
+  // }, [username]);
+
   useEffect(() => {
-    localStorage.setItem("username", username);
+    if (typeof window !== "undefined") {
+      if (username) {
+        localStorage.setItem("username", username);
+      } else {
+        localStorage.removeItem("username");
+      }
+    }
   }, [username]);
 
   return (
@@ -39,7 +62,19 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-// Custom hook to use the context
+// Create a hook to use the context
 export const useUserContext = () => useContext(UserContext);
 
-// Context allows us to share data across all components in an app without passing it down through props at every level.  It's like a global.
+// export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+//   children,
+// }) => {
+//   const [username, setUsername] = useState<string>("");
+
+//   return (
+//     <UserContext.Provider value={{ username, setUsername }}>
+//       {children}
+//     </UserContext.Provider>
+//   );
+// };
+
+// export const useUserContext = () => useContext(UserContext);
