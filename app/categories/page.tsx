@@ -4,7 +4,7 @@ import { Button, Callout, TextField } from "@radix-ui/themes";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-// import { useState } from "react";
+import { useState } from "react";
 // import ErrorMessage from "@/app/components/ErrorMessage";
 // import Spinner from "@/app/components/Spinner";
 // import NavBarTask from "../components/NavBarTask";
@@ -22,7 +22,7 @@ const AddCategoryPage = () => {
   // } = useForm<CategoryForm>();
   const { register, handleSubmit } = useForm<CategoryForm>();
 
-  // const [error, setError] = useState("");
+  const [error, setError] = useState("");
   // const [isSubmitting, setIsSubmitting] = useState(false);
 
   // const onSubmit = handleSubmit(async (data) => {
@@ -43,16 +43,20 @@ const AddCategoryPage = () => {
     <>
       {/* <NavBarTask /> */}
       <div className="max-w-xl">
-        {/* {error && (
+        {error && (
           <Callout.Root color="red" className="mb-5">
             <Callout.Text>{error}</Callout.Text>
           </Callout.Root>
-        )} */}
+        )}
         <form
           className="space-y-3"
           onSubmit={handleSubmit(async (data) => {
-            await axios.post("/api/categories", data);
-            router.push("/");
+            try {
+              await axios.post("/api/categories", data);
+              router.push("/");
+            } catch (error) {
+              setError("Error in Category submission.");
+            }
           })}
         >
           <TextField.Root

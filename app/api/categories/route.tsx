@@ -6,7 +6,7 @@ const prisma = new PrismaClient(); // Initialize Prisma Client
 
 // This is based on the columns needed in the schema.prisma file
 const createCategorySchema = z.object({
-  name: z.string().min(1).max(20),
+  name: z.string().min(1, "A category value is required.").max(20),
 });
 
 export async function POST(request: NextRequest) {
