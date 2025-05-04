@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-// import prisma from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
+
 const prisma = new PrismaClient(); // Initialize Prisma Client
 
 // This is based on the columns needed in the schema.prisma file
