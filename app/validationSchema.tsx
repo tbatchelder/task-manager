@@ -36,3 +36,8 @@ export const createTaskSchema = z.object({
     ),
   categoryId: z.number().int("Category ID must be an integer."),
 });
+
+// This is based on the columns needed in the schema.prisma file
+export const createCategorySchema = z.object({
+  name: z.string().min(1, "A category value is required.").max(20),
+});

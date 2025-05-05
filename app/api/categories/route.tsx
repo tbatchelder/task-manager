@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
+import { createCategorySchema } from "@/app/validationSchema";
 
 const prisma = new PrismaClient(); // Initialize Prisma Client
-
-// This is based on the columns needed in the schema.prisma file
-const createCategorySchema = z.object({
-  name: z.string().min(1, "A category value is required.").max(20),
-});
 
 export async function POST(request: NextRequest) {
   // When our app sends a POST request, it includes data in the request body {"name": "Category Name"}
