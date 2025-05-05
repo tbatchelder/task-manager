@@ -2,15 +2,15 @@
 
 import { Button, Callout, TextField } from "@radix-ui/themes";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import ErrorMessage from "@/app/components/ErrorMessage";
-import Spinner from "@/app/components/Spinner";
-import NavBarTask from "../components/NavBarTask";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createCategorySchema } from "../validationSchema";
 import { z } from "zod";
+import axios from "axios";
+import ErrorMessage from "@/app/components/ErrorMessage";
+import Spinner from "@/app/components/Spinner";
+import NavBarTask from "../components/NavBarTask";
 
 type CategoryForm = z.infer<typeof createCategorySchema>; // This is used to infer the type of the schema
 
@@ -24,7 +24,9 @@ const AddCategoryPage = () => {
     resolver: zodResolver(createCategorySchema),
   });
 
+  // To provide an error to the user
   const [error, setError] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = handleSubmit(async (data) => {
@@ -33,6 +35,7 @@ const AddCategoryPage = () => {
       await axios.post("/api/categories", data);
       router.push("/");
     } catch (error) {
+      console.log(error); // Log the error for debugging purposes
       setIsSubmitting(false);
       setError("A Category submission error occurred.");
     }

@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
   // Validate the request body before sending it to the database
   const validation = createCategorySchema.safeParse(body);
 
+  // Check that the validation is good
   if (!validation.success) {
     return NextResponse.json(validation.error.format(), { status: 400 }); // This formats the error message in a way that can be used by the client - 400 is a bad request
   }
@@ -25,4 +26,20 @@ export async function POST(request: NextRequest) {
 
   // This is the response that will be sent back to the client
   return NextResponse.json(newCategory, { status: 201 }); // 201 is a created response
+}
+
+export async function GET() {
+  try {
+    // This is the actual data that will be pulled from the database
+    const categories = await prisma.category.findMany();
+
+    // This is the response that will be sent back to the client
+    return NextResponse.json(categories, { status: 200 }); // 200 is a success response
+  } catch (error) {
+    console.log(error); // Log the error for debugging purposes
+    return NextResponse.json(
+      { error: "An error occurred while fetching categories." },
+      { status: 500 }
+    ); // 500 is an internal server error
+  }
 }
