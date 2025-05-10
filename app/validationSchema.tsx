@@ -20,21 +20,48 @@ export const createTaskSchema = z.object({
     .max(50, "Title must be 50 characters or less."),
   description: z.string().min(1, "Description is required."),
   // This checks to make sure the date is in the future and not today
-  duedate: z
-    .date({
-      required_error: "Due date is required.",
-    })
+  // duedate: z
+  //   .date({
+  //     required_error: "Due date is required.",
+  //   })
+  //   .nullable() // Allow null during form editing
+  //   .refine(
+  //     (date) => {
+  //       if (!date) return false; // Fail validation if null/undefined
+  //       const today = new Date();
+  //       today.setHours(0, 0, 0, 0); // Remove time component for comparison
+  //       return date >= today;
+  //     },
+  //     {
+  //       message: "Due date cannot be earlier than today.",
+  //     }
+  //   ),
+  duedate: z.union([z.date(), z.string()]).transform((val) => {
+    if (typeof val === "string") {
+      return new Date(val); // Convert string to Date object
+    }
+    return val;
+  }),
+  categoryId: z
+    .union([z.number().int(), z.string()]) // Accept both string and number during validation
     .refine(
-      (date) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Remove time component for comparison
-        return date >= today;
+      (val) => {
+        if (typeof val === "string") {
+          return val !== "";
+        }
+        return val > 0; // Ensure category ID is positive
       },
       {
-        message: "Due date cannot be earlier than today.",
+        message: "Category is required.",
       }
-    ),
-  categoryId: z.number().int("Category ID must be an integer."),
+    )
+    .transform((val) => {
+      // Transform string to number if needed
+      if (typeof val === "string" && val !== "") {
+        return parseInt(val, 10);
+      }
+      return val;
+    }),
 });
 
 // This is based on the columns needed in the schema.prisma file

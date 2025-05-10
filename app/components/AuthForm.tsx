@@ -1,5 +1,5 @@
 // So, a great deal of this was taken from copilot and Claude AI chats I've been having.  Oddly, these chats with Claude started before I even read what this project was.  I wanted to make a GitHub Page for myself to show off a little ... but I wanted it encrypted too so not just anyone would have access to everything I wanted to show.  So I was looking up how to do that since I couldn't use a database.
-// Aftere thinkning about it, I checked with Claude about using JSON as my "database" and the output looked promising ... so I tried that same approach here.
+// After thinking about it, I checked with Claude about using JSON as my "database" and the output looked promising ... so I tried that same approach here.
 // Everything was built up piece by piece.
 // First we built the main page just to get the page to show up.
 // Second, we got it to try and read the JSON file.  We first built it into this page just to see if it would work ... it did.  Later, we moved it into a utility feature so it could parse any JSON we wanted...which will be great for the project I was initially looking into.  This took some work to get but eventually we got it to spit out to the screen and console.
@@ -78,7 +78,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
       };
       fetchUserData();
     } catch (err) {
-      console.log("Using default credentials.");
+      console.log("Using default credentials.", err);
     }
   }, []);
 
@@ -162,3 +162,82 @@ export default AuthForm;
 
 // const [savedUsers, setSavedUsers] = useState<savedUserTypes[]>([]);
 // const router = useRouter();
+
+// MORE NOTES
+// Centralized API: easy acess to stored data across multiple components without prop drilling; React specific; real-time updates for components that are subscribed to the context ensuring synchronization; memory safe
+// there is some performance overhead for frequent re-renders if not properly managed; complex; state is lost upon page refresh unless persisted in local storage or a database; not suitable for large-scale applications with complex state management needs
+
+// Local Storage: persistent storage; easy to use; no server-side code required; data is stored in the browser and can be accessed across sessions; simple key-value pairs; no need for a database or server-side code
+// data is not automatically synchronized across tabs or windows; limited to string data; synchronous API can block the main thread; not suitable for sensitive data due to security concerns; limited storage capacity (typically around 5-10MB per domain).  Major security risk.  Manually updated and controlled.
+
+//URL: easy to use; no server-side code required; data is stored in the URL and can be accessed across sessions; simple key-value pairs; no need for a database or server-side code; bookmark friendly; shareable links;
+// major security risk; length of data is limited to about 2000 characters; must be manaully parsed and is messy
+
+// What is Context?
+// In React, Context allows us to share data (like the username) across all components in the app without passing it down through props at every level. Think of it as a "global storage" for your app.
+
+// How do we create Context?
+// Import Context Functions: We use two specific functions from React:
+// createContext: Creates the "storage" for our shared data (the username).
+// useContext: Lets components access this shared data easily.
+
+// Define the Context: We create a UserContext to hold:
+// The username (the data we’re sharing).
+// A setUsername function to update the username.
+// const UserContext = createContext<{
+//   username: string;
+//   setUsername: (username: string) => void;
+// }>({
+//   username: "", // Default value of username
+//   setUsername: () => {}, // Default updater (does nothing initially)
+// });
+// Why do we need a setUsername function? So we can change the username whenever a user logs in or out, and other components can reflect that change.
+
+// Create a Provider Component The Provider is a special wrapper that gives components access to the UserContext. Inside the Provider, we:
+// Store the username in a useState hook.
+// Share both the username and the setUsername updater function using the UserContext.Provider.
+// export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+//   children,
+// }) => {
+//   const [username, setUsername] = useState<string>("");
+
+//   return (
+//     <UserContext.Provider value={{ username, setUsername }}>
+//       {children}
+//     </UserContext.Provider>
+//   );
+// };
+// Key Points About the Provider:
+// The value prop in UserContext.Provider contains the data we want to share (username) and the function to update it (setUsername).
+// The children prop is the rest of your app that will use the username.
+
+// Create a Helper Hook for Easy Access To make it easier to use the context, we create a custom hook that simplifies accessing UserContext:
+// export const useUserContext = () => useContext(UserContext);
+
+// Pretty well so far. Let me say it back to you and let me know if I'm right or wrong. The Context acts like a global variable but keeps it wrapped up in the entire React app so it doesn't leak into the browser. The UserContext starts off by declaring the type of value (string) and providing a setter (void) while simultaneously providing it default values (presumably so it doesn't error out?) The UserProvider then gives the React app access to this UserContext (value and setter) .... by wrapping around any React page or component. I'm not sure I'm getting that last part right.
+
+// Your Summary:
+// "The Context acts like a global variable but keeps it wrapped up in the entire React app so it doesn't leak into the browser."
+
+// Correct! Context is indeed like a global variable for React, scoped entirely within your React app. It doesn't leak into browser storage, so it’s ephemeral—it exists only while the app is running.
+
+// "The UserContext starts off by declaring the type of value (string) and providing a setter (void) while simultaneously providing it default values (presumably so it doesn't error out?)."
+
+// Spot on! The UserContext defines the shape of the data it stores (e.g., username as a string and setUsername as a function). Default values are provided to avoid runtime errors when no context is set initially—good catch on that detail!
+
+// "The UserProvider then gives the React app access to this UserContext (value and setter) .... by wrapping around any React page or component."
+
+// Partially correct. The UserProvider doesn’t just wrap around any page or component. It wraps the entire part of your app that needs access to the context (like your login form and tasks page).
+
+// For example, if you wrap the <UserProvider> around your whole app in _app.tsx, the UserContext will be accessible to every page and component in the app.
+
+// If you wrap only specific parts (like the login and task pages), then only those parts can use the context.
+
+// Where You’re Almost There
+// Think of the UserProvider as a "distribution center" for your UserContext. Wherever the UserProvider is placed, all components beneath it (nested or child components) can access the context—while components outside of it won’t have access.
+
+// For instance:
+// If the UserProvider wraps the whole app (at _app.tsx), it’s globally accessible.
+// If it only wraps the login page, then only the login and any children components can use the username.
+
+// Does that help refine the "last part" you were unsure about? You're picking this up really well—great work! Let’s keep building on it if you want.
