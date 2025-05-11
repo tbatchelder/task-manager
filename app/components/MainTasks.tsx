@@ -9,10 +9,10 @@ import TableRow from "./TableRow";
 
 interface Task {
   id: number;
-  category: string;
+  category: { id: number; name: string } | null; // Ensure category is an object
   name: string;
   description: string;
-  dueDate: string;
+  duedate: string;
   status: string;
   owner: string;
 }
@@ -30,40 +30,37 @@ const MainTasks: React.FC = () => {
     } else {
       console.error("No username found in local storage.");
     }
+
+    async function fetchTasks() {
+      try {
+        const response = await fetch("/api/tasks");
+        if (!response.ok) throw new Error("Failed to fetch tasks");
+
+        const data = await response.json();
+        console.log(data);
+        setTasks(data);
+        // No need for additional filtering since API now handles it
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    }
+
+    fetchTasks();
   }, []);
 
-  // Fetch data from the database on component mount
-  // Again, this ensures that it only occurs once and not on every re-render
-  // useEffect(() => {
-  //   const fetchTasks = async () => {
-  //     try {
-  //       const response = await fetch("/api/tasks"); // Replace with your actual API endpoint
-  //       const data = await response.json();
-  //       const filteredData = data.filter(
-  //         (task: Task) => task.status !== "DELETED"
-  //       );
-  //       setTasks(filteredData);
-  //     } catch (error) {
-  //       console.error("Error fetching tasks:", error);
-  //     }
-  //   };
-
-  //   fetchTasks();
-  // }, []);
-
   const handleEdit = (id: number, owner: string) => {
-    router.push(`/newtasks?id=${id}&username=${owner}`); // Dynamic navigation to NewTask
+    router.push(`/edittasks?id=${id}&username=${owner}`); // Dynamic navigation to NewTask
   };
 
   // Function to handle Close action
   const handleClose = async (id: number) => {
     try {
-      await fetch(`/api/tasks/${id}`, {
+      await fetch(`/api/tasks`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: "CLOSED" }),
+        body: JSON.stringify({ id, status: "CLOSED" }),
       });
 
       setTasks((prevTasks) =>
@@ -79,12 +76,12 @@ const MainTasks: React.FC = () => {
   // Function to handle Delete action
   const handleDelete = async (id: number) => {
     try {
-      await fetch(`/api/tasks/${id}`, {
+      await fetch(`/api/tasks`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: "DELETED" }),
+        body: JSON.stringify({ id, status: "DELETED" }),
       });
 
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
@@ -113,10 +110,18 @@ const MainTasks: React.FC = () => {
             <TableRow
               key={task.id}
               id={task.id}
-              category={task.category}
+              category={task.category?.name || "No Category"}
               name={task.name}
               description={task.description}
-              dueDate={task.dueDate}
+              duedate={
+                task.duedate
+                  ? new Date(task.duedate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "No Due Date"
+              } // ✅ Convert date for display
               status={task.status}
               owner={task.owner}
               loggedInOwner={loggedInUser}

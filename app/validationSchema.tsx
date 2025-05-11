@@ -19,29 +19,26 @@ export const createTaskSchema = z.object({
     .min(1, "Title is required.")
     .max(50, "Title must be 50 characters or less."),
   description: z.string().min(1, "Description is required."),
-  // This checks to make sure the date is in the future and not today
-  // duedate: z
-  //   .date({
-  //     required_error: "Due date is required.",
-  //   })
-  //   .nullable() // Allow null during form editing
-  //   .refine(
-  //     (date) => {
-  //       if (!date) return false; // Fail validation if null/undefined
-  //       const today = new Date();
-  //       today.setHours(0, 0, 0, 0); // Remove time component for comparison
-  //       return date >= today;
-  //     },
-  //     {
-  //       message: "Due date cannot be earlier than today.",
-  //     }
-  //   ),
-  duedate: z.union([z.date(), z.string()]).transform((val) => {
-    if (typeof val === "string") {
-      return new Date(val); // Convert string to Date object
-    }
-    return val;
-  }),
+  duedate: z
+    .union([z.date(), z.string()]) // Accept both Date and string during validation
+    // If it's a string, it will be parsed to a Date object
+    .transform((val) => {
+      if (typeof val === "string") {
+        return new Date(val); // Convert string to Date object
+      }
+      return val;
+    })
+    .refine(
+      (date) => {
+        if (!date || isNaN(date.getTime())) return false; // Ensure valid date - if it's null or undefined, fail validation
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Remove time for accurate comparison - which is also a good idea since we want it due on a day, not to an exact time ... which is really silly to do for most things
+        return date > today; // Must be a future date
+      },
+      {
+        message: "Due date must be in the future.",
+      }
+    ),
   categoryId: z
     .union([z.number().int(), z.string()]) // Accept both string and number during validation
     .refine(
@@ -68,3 +65,22 @@ export const createTaskSchema = z.object({
 export const createCategorySchema = z.object({
   name: z.string().min(1, "A category value is required.").max(20),
 });
+
+// This DOES NOT WORK .... will have to refactor it with what does work to still make sure we have a date in the future
+// This checks to make sure the date is in the future and not today
+// duedate: z
+//   .date({
+//     required_error: "Due date is required.",
+//   })
+//   .nullable() // Allow null during form editing
+//   .refine(
+//     (date) => {
+//       if (!date) return false; // Fail validation if null/undefined
+//       const today = new Date();
+//       today.setHours(0, 0, 0, 0); // Remove time component for comparison
+//       return date >= today;
+//     },
+//     {
+//       message: "Due date cannot be earlier than today.",
+//     }
+//   ),

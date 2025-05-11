@@ -10,7 +10,7 @@
 
 // Ok, so at this level, we are pulling the functions from a higher level and passing them down to the TaskIcon component.  However, at this stage, we are passing in the id value for the row which will pass that back up to the higher level.
 // This is known as "lifting state up" where the child component doesn't actually handle the logic itself, but rather delegates the responsibility to the parent component.  The parent, having full control over the context, handles the actual operation and passes the result back down to the child component.
-// This methodology allows the parent to manage all logic and state, while the child component simply handles the display and user interaction.  
+// This methodology allows the parent to manage all logic and state, while the child component simply handles the display and user interaction.
 
 "use client";
 
@@ -21,7 +21,7 @@ interface TableRowProps {
   category: string;
   name: string;
   description: string;
-  dueDate: string;
+  duedate: string;
   status: string;
   owner: string;
   loggedInOwner: string;
@@ -35,7 +35,7 @@ const TableRow: React.FC<TableRowProps> = ({
   category,
   name,
   description,
-  dueDate,
+  duedate,
   status,
   owner,
   loggedInOwner,
@@ -43,12 +43,7 @@ const TableRow: React.FC<TableRowProps> = ({
   onClose,
   onDelete,
 }) => {
-  const rowClass =
-    status === "CLOSED"
-      ? "bg-green-100 font-bold italic"
-      : status === "DELETED"
-      ? "bg-red-100 line-through italic font-bold"
-      : "";
+  const rowClass = status === "CLOSED" ? "bg-green-100 font-bold italic" : "";
 
   return (
     <tr className={`border-b hover:bg-gray-100 ${rowClass}`}>
@@ -57,7 +52,7 @@ const TableRow: React.FC<TableRowProps> = ({
       <td className="px-4 py-2">{category}</td>
       <td className="px-4 py-2">{name}</td>
       <td className="px-4 py-2">{description}</td>
-      <td className="px-4 py-2">{dueDate}</td>
+      <td className="px-4 py-2">{duedate}</td>
       <td className="px-4 py-2">
         <TaskIcons
           rowOwner={owner}

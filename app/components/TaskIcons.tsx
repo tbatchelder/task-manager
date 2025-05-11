@@ -25,14 +25,17 @@ const TaskIcons: React.FC<IconsProps> = ({
   onClose,
   onDelete,
 }) => {
-  const isDisabled = rowOwner !== loggedInOwner || status === "CLOSED";
+  const isDisabled =
+    rowOwner !== loggedInOwner || ["CLOSED", "DELETED"].includes(status);
 
   return (
     <div className="flex space-x-2">
       {/* The $, according to AI, means it's a dynamic variable; it's not actually necessary; just a convention used to signify a dynamic variable in Java/TypeScript :: OK, always good to have a visual indicator I guess for easier code reading */}
       <button
         className={`${
-          isDisabled ? "text-gray-400 cursor-not-allowed" : "text-blue-500"
+          isDisabled
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-blue-500 hover:text-blue-700 focus:ring-2 focus:ring-blue-300"
         }`}
         disabled={isDisabled}
         onClick={onEdit}
@@ -41,7 +44,9 @@ const TaskIcons: React.FC<IconsProps> = ({
       </button>
       <button
         className={`${
-          isDisabled ? "text-gray-400 cursor-not-allowed" : "text-green-500"
+          isDisabled
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-green-500 hover:text-green-700 focus:ring-2 focus:ring-green-300"
         }`}
         disabled={isDisabled}
         onClick={onClose}
@@ -50,7 +55,9 @@ const TaskIcons: React.FC<IconsProps> = ({
       </button>
       <button
         className={`${
-          isDisabled ? "text-gray-400 cursor-not-allowed" : "text-red-500"
+          isDisabled
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-red-500 hover:text-red-700 focus:ring-2 focus:ring-red-300"
         }`}
         disabled={isDisabled}
         onClick={onDelete}
