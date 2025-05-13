@@ -59,7 +59,6 @@ const AddCategoryPage = () => {
           <Button disabled={isSubmitting}>
             Add Category {isSubmitting && <Spinner />}
           </Button>
-          <Button>Add Category</Button>
         </form>
       </div>
     </>

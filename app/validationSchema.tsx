@@ -59,6 +59,7 @@ export const createTaskSchema = z.object({
       }
       return val;
     }),
+  status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED"]).default("OPEN"),
 });
 
 // This is based on the columns needed in the schema.prisma file

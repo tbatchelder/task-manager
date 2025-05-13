@@ -29,21 +29,6 @@ const EditTask = () => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    if (taskId) {
-      async function fetchTask() {
-        try {
-          const response = await axios.get(`/api/tasks/${taskId}`);
-          setTaskData(response.data);
-        } catch (error) {
-          console.error("Failed to load task:", error);
-        }
-      }
-
-      fetchTask();
-    }
-  }, [taskId]);
-
   // To hold the categories
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
     []
@@ -66,6 +51,7 @@ const EditTask = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = handleSubmit(async (data) => {
+    console.log("Form data:", data);
     try {
       setIsSubmitting(true);
 
@@ -80,34 +66,54 @@ const EditTask = () => {
             : data.duedate,
       };
 
-      await axios.put("/api/tasks", formattedData); // Send the data to the API
+      await axios.put(`/api/tasks/${taskId}`, formattedData); // Send the data to the API
       setIsSubmitting(false); // Stop the spinner
       router.push("/"); // Redirect to the home page
     } catch (error) {
       console.error("Axios error:", error);
       setIsSubmitting(false);
-      setError("An error occurred while creating the task.");
+      setError("An error occurred while updating the task.");
     }
   });
 
-  // This ensures that we pull this information only once when the component mounts
-  // and not on every render. This is important for performance and to avoid unnecessary API calls.
   useEffect(() => {
-    async function fetchCategories() {
+    async function fetchData() {
+      // Fetch categories
       try {
-        const response = await axios.get("/api/categories");
-        setCategories(response.data);
+        const categoriesResponse = await axios.get("/api/categories");
+        setCategories(categoriesResponse.data);
       } catch (error) {
         console.error("Error fetching categories:", error);
+        setError("Failed to load categories");
+      }
+
+      // Fetch the task data
+      // So, apparently, in order to get data for a single instance, you need to pass it to a folder called [id] in the api/tasks folder
+      // you can't simply pass it in the body like we did elsewhere either as that doesn't work
+      // Doing this actually makes sense as it is a RESTful API - which means we are separating the main pull for individual pulls
+      // We'll have to pass it back this way as well ... maybe]
+      try {
+        const response = await axios.get(`/api/tasks/${taskId}`);
+        const task = response.data;
+
+        // Set the form values with the task data
+        setValue("name", task.name);
+        setValue("description", task.description);
+        setValue("categoryId", task.categoryId);
+        setValue("duedate", new Date(task.duedate));
+        setValue("owner", username || task.owner);
+        setValue("status", task.status);
+
+        setTaskData(task);
+        console.log("Task data:", task);
+      } catch (error) {
+        console.error("Failed to load task:", error);
+        setError("Failed to load task data");
       }
     }
 
-    if (username) {
-      setValue("owner", username); // ✅ Set owner from URL parameter
-    }
-
-    fetchCategories();
-  }, [setValue]); // This is pushing the value (owner) to the form state so it can be submitted with the form)
+    fetchData();
+  }, [taskId, username, setValue]); // This is pushing the value (owner) to the form state so it can be submitted with the form)
 
   return (
     <>
@@ -159,6 +165,27 @@ const EditTask = () => {
           <ErrorMessage>{errors.categoryId?.message}</ErrorMessage>
 
           <Controller
+            name="status"
+            control={control}
+            defaultValue="OPEN" // Start with undefined instead of empty string or 0
+            render={({ field }) => (
+              <Select.Root value={field.value} onValueChange={field.onChange}>
+                <Select.Trigger color="cyan" placeholder="Select a status...">
+                  {/* Placeholder is on the Trigger component */}
+                </Select.Trigger>
+                <Select.Content color="cyan" position="popper">
+                  {["OPEN", "IN_PROGRESS", "CLOSED"].map((status) => (
+                    <Select.Item key={status} value={status}>
+                      {status}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            )}
+          />
+          <ErrorMessage>{errors.status?.message}</ErrorMessage>
+
+          <Controller
             name="description"
             control={control}
             render={({ field }) => (
@@ -196,3 +223,111 @@ const EditTask = () => {
 };
 
 export default EditTask;
+
+// Next.js Dynamic API Routes - How They Work
+
+// In Next.js, when you create a file with square brackets like `[id]` in the filename or folder name, it creates a dynamic route:
+
+// 1. The file structure:
+//    app/api/tasks/[id]/route.ts
+
+// 2. This single file handles ALL these URLs:
+//    - /api/tasks/1
+//    - /api/tasks/2
+//    - /api/tasks/123
+//    - /api/tasks/anything
+
+// 3. Inside the route handler, you access the dynamic parameter:
+//    ```typescript
+//    export async function GET(
+//      request: NextRequest,
+//      { params }: { params: { id: string } }
+//    ) {
+//      // params.id will contain the value from the URL
+//      // e.g., if URL is /api/tasks/5, then params.id === '5'
+//      console.log(params.id);
+//      // ...
+//    }
+//    ```
+
+// Important: You DO NOT create physical files for each ID. You create ONE file with [id] in its name, and Next.js handles the routing.
+
+// Now, we COULD put it in the URL ... but that's not typically how it's done normally.
+// const categoriesResponse = await axios.get("/api/categories");
+
+// export async function GET(request: NextRequest) {
+//   try {
+//     // Get the task ID from the URL query parameters
+//     const url = new URL(request.url);
+//     const id = url.searchParams.get("id");
+
+//     // If an ID is provided, fetch a specific task
+//     if (id) {
+//       const taskId = parseInt(id);
+
+//       if (isNaN(taskId)) {
+//         return NextResponse.json({ error: "Invalid task ID" }, { status: 400 });
+//       }
+
+//       const task = await prisma.task.findUnique({
+//         where: { id: taskId },
+//         include: { category: true },
+//       });
+
+//       if (!task) {
+//         return NextResponse.json({ error: "Task not found" }, { status: 404 });
+//       }
+
+//       return NextResponse.json(task, { status: 200 });
+//     }
+
+//     // Otherwise, fetch all tasks
+//     const tasks = await prisma.task.findMany({
+//       where: { status: { not: "DELETED" } }, // Filter out deleted tasks
+//       include: { category: true }, // Fetch category name along with task data
+//       orderBy: { duedate: "asc" }, // Sort tasks by due date
+//     });
+
+//     return NextResponse.json(tasks, { status: 200 });
+//   } catch (error) {
+//     console.error("Error fetching task(s):", error);
+//     return NextResponse.json(
+//       { error: "Failed to retrieve tasks" },
+//       { status: 500 }
+//     );
+//   }
+// }
+
+// // PUT (update) a task
+// export async function PUT(request: NextRequest) {
+//   try {
+//     const body = await request.json();
+//     const { id, name, description, categoryId, duedate, owner } = body;
+
+//     if (!id) {
+//       return NextResponse.json(
+//         { error: "Task ID is required" },
+//         { status: 400 }
+//       );
+//     }
+
+//     const updatedTask = await prisma.task.update({
+//       where: { id: Number(id) },
+//       data: {
+//         name,
+//         description,
+//         categoryId: Number(categoryId),
+//         duedate: new Date(duedate),
+//         owner,
+//       },
+//     });
+
+//     return NextResponse.json(updatedTask, { status: 200 });
+//   } catch (error) {
+//     console.error("Error updating task:", error);
+//     return NextResponse.json(
+//       { error: "Failed to update task" },
+//       { status: 500 }
+//     );
+//   }
+// }
