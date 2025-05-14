@@ -55,18 +55,30 @@ const EditTask = () => {
     try {
       setIsSubmitting(true);
 
+      console.log(taskData);
+
       // Convert categoryId to a number before sending the request if needed
-      const formattedData = {
-        ...data,
+      const formData = {
+        // ...data,
+        // categoryId: Number(data.categoryId),
+        // // Ensure duedate is properly formatted as ISO string
+        // duedate:
+        //   data.duedate instanceof Date
+        //     ? data.duedate.toISOString()
+        //     : data.duedate,
+        id: Number(taskId), // Include the task ID explicitly
+        name: data.name,
+        description: data.description,
         categoryId: Number(data.categoryId),
-        // Ensure duedate is properly formatted as ISO string
         duedate:
           data.duedate instanceof Date
             ? data.duedate.toISOString()
             : data.duedate,
+        owner: data.owner || username,
+        status: data.status,
       };
 
-      await axios.put(`/api/tasks/${taskId}`, formattedData); // Send the data to the API
+      await axios.put(`/api/tasks/${taskId}`, formData); // Send the data to the API
       setIsSubmitting(false); // Stop the spinner
       router.push("/"); // Redirect to the home page
     } catch (error) {
@@ -77,22 +89,17 @@ const EditTask = () => {
   });
 
   useEffect(() => {
+    if (!taskId) {
+      setError("Task ID is missing");
+      return;
+    }
+
     async function fetchData() {
       // Fetch categories
       try {
         const categoriesResponse = await axios.get("/api/categories");
         setCategories(categoriesResponse.data);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        setError("Failed to load categories");
-      }
 
-      // Fetch the task data
-      // So, apparently, in order to get data for a single instance, you need to pass it to a folder called [id] in the api/tasks folder
-      // you can't simply pass it in the body like we did elsewhere either as that doesn't work
-      // Doing this actually makes sense as it is a RESTful API - which means we are separating the main pull for individual pulls
-      // We'll have to pass it back this way as well ... maybe]
-      try {
         const response = await axios.get(`/api/tasks/${taskId}`);
         const task = response.data;
 
@@ -107,9 +114,33 @@ const EditTask = () => {
         setTaskData(task);
         console.log("Task data:", task);
       } catch (error) {
-        console.error("Failed to load task:", error);
-        setError("Failed to load task data");
+        console.error("Error fetching data:", error);
+        setError("Failed to load task or category data");
       }
+
+      // Fetch the task data
+      // So, apparently, in order to get data for a single instance, you need to pass it to a folder called [id] in the api/tasks folder
+      // you can't simply pass it in the body like we did elsewhere either as that doesn't work
+      // Doing this actually makes sense as it is a RESTful API - which means we are separating the main pull for individual pulls
+      // We'll have to pass it back this way as well ... maybe]
+      // try {
+      // const response = await axios.get(`/api/tasks/${taskId}`);
+      // const task = response.data;
+
+      // Set the form values with the task data
+      // setValue("name", task.name);
+      // setValue("description", task.description);
+      // setValue("categoryId", task.categoryId);
+      // setValue("duedate", new Date(task.duedate));
+      // setValue("owner", username || task.owner);
+      // setValue("status", task.status);
+
+      // setTaskData(task);
+      // console.log("Task data:", task);
+      // } catch (error) {
+      //   console.error("Failed to load task:", error);
+      //   setError("Failed to load task data");
+      // }
     }
 
     fetchData();
@@ -141,7 +172,7 @@ const EditTask = () => {
           <Controller
             name="categoryId"
             control={control}
-            defaultValue={0} // Start with undefined instead of empty string or 0
+            // defaultValue={0} // Start with undefined instead of empty string or 0
             render={({ field }) => (
               <Select.Root
                 value={field.value ? String(field.value) : ""}
@@ -150,8 +181,11 @@ const EditTask = () => {
                 }
               >
                 <Select.Trigger color="cyan" placeholder="Select a category...">
-                  {/* Placeholder is on the Trigger component */}
+                  {/* Display selected category name if available */}
+                  {field.value &&
+                    categories.find((c) => c.id === Number(field.value))?.name}
                 </Select.Trigger>
+
                 <Select.Content color="cyan" position="popper">
                   {categories.map((category) => (
                     <Select.Item key={category.id} value={String(category.id)}>
@@ -172,6 +206,7 @@ const EditTask = () => {
               <Select.Root value={field.value} onValueChange={field.onChange}>
                 <Select.Trigger color="cyan" placeholder="Select a status...">
                   {/* Placeholder is on the Trigger component */}
+                  {field.value}
                 </Select.Trigger>
                 <Select.Content color="cyan" position="popper">
                   {["OPEN", "IN_PROGRESS", "CLOSED"].map((status) => (
@@ -198,7 +233,7 @@ const EditTask = () => {
           <Controller
             name="duedate"
             control={control}
-            defaultValue={undefined} // Use undefined instead of null
+            // defaultValue={undefined} // Use undefined instead of null
             render={({ field }) => (
               <DatePicker
                 selected={field.value}
@@ -331,3 +366,7 @@ export default EditTask;
 //     );
 //   }
 // }
+
+//<Select.Trigger color="cyan" placeholder="Select a category...">
+//  {/* Placeholder is on the Trigger component */}
+//</Select.Trigger>;

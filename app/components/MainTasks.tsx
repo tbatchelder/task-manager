@@ -18,11 +18,17 @@ interface Task {
   owner: string;
 }
 
+// Ok ... sorting ... filtering ... how does one do that with a multi-column table?
+// In order to sort or filter by a column, to need to know the column name and direction (if any).
+// An interface is a way to define the shape of an object in TypeScript. So, we can use an interface to define the shape of the sort and filter objects. This will help us to keep track of the sorting and filtering state in a more structured way.
+// It has two properties: key and direction. The key property is a string that represents the name of the column to sort by, and the direction property is a string that can be either "asc" or "desc" to indicate the sorting direction.
 interface SortConfig {
   key: keyof Task | "category.name";
   direction: "asc" | "desc";
 }
 
+// The same thing goes for the filter config. We can use an interface to define the shape of the filter object. This will help us to keep track of the filtering state in a more structured way.
+// The FilterConfig interface has four properties: category, status, owner, and searchTerm. Each property is a string that represents the value of the filter. The category property is used to filter by category name, the status property is used to filter by task status, the owner property is used to filter by task owner, and the searchTerm property is used to filter by task name or description.
 interface FilterConfig {
   category: string;
   status: string;
@@ -34,9 +40,9 @@ const MainTasks: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loggedInUser, setLoggedInUser] = useState<string>("");
 
+  // Once we have defined the shape of the sort/filtering objects, we need to apply it to a state management solution.
   // Sorting state
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
-
   // Filtering state
   const [filterConfig, setFilterConfig] = useState<FilterConfig>({
     category: "",
@@ -45,49 +51,11 @@ const MainTasks: React.FC = () => {
     searchTerm: "",
   });
 
+  // To facilitate the filtering, we need to create unique lists of categories, owners, and statuses. This will allow us to populate the filter dropdowns with unique values.
   // Unique lists for filter dropdowns
   const [categories, setCategories] = useState<string[]>([]);
   const [owners, setOwners] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
-
-  // const [sortConfig, setSortConfig] = useState<{
-  //   key: keyof Task;
-  //   direction: string;
-  // } | null>(null);
-
-  // const sortData = useMemo(() => {
-  //   if (!sortConfig?.key) {
-  //     return tasks;
-  //   }
-  //   const sortedData = [...tasks].sort((a, b) => {
-  //     const aValue = a[sortConfig.key];
-  //     const bValue = b[sortConfig.key];
-  //     if (aValue < bValue) {
-  //       return sortConfig.direction === "asc" ? -1 : 1;
-  //     }
-  //     if (aValue > bValue) {
-  //       return sortConfig.direction === "asc" ? 1 : -1;
-  //     }
-  //     return 0;
-  //   });
-  //   return sortedData;
-  // }, [tasks, sortConfig]);
-
-  // // Memoize based on data and sortConfig
-  // const handleSort = (key: keyof Task) => {
-  //   let direction = "asc";
-  //   if (sortConfig?.key === key && sortConfig.direction === "asc") {
-  //     direction = "desc";
-  //   }
-  //   setSortConfig({ key, direction });
-  // };
-
-  // const getSortIndicator = (key: keyof Task) => {
-  //   if (sortConfig?.key !== key) {
-  //     return null; // No indicator
-  //   }
-  //   return sortConfig.direction === "asc" ? "▲" : "▼";
-  // };
 
   // Fetch Owner from local storage
   useEffect(() => {
@@ -108,6 +76,11 @@ const MainTasks: React.FC = () => {
         // No need for additional filtering since API now handles it
 
         // Extract unique values for filters
+        // This is done by taking the data array, mapping to a new array containing just the indicated fields or setting it to a default value (which is unlikely to happen).
+        // A Set is a JavaScript object that only stores unique values. When you create a Set from an array, it automatically removes all duplicate values. For example, if your tasks have categories like ["Work", "Personal", "Work", "Personal", "Bills"], a Set would reduce this to just ["Work", "Personal", "Bills"]. .... AI ... that's extremeley helpful to know.
+        // This is then converted back to an array using Array.from() to get the unique values which then populates the filter dropdowns.
+        // Sets are specifically designed to store unique values and are more efficient for this purpose than using an array with a filter method.
+        // It is also more performant for larger datasets, as it avoids the need for nested loops or multiple passes through the data.
         const uniqueCategories = Array.from(
           new Set(
             data.map((task: Task) => task.category?.name || "No Category")
@@ -131,11 +104,17 @@ const MainTasks: React.FC = () => {
     fetchTasks();
   }, []);
 
+  //useMemo is a React hook that allows you to memoize (cache) the result of a computation so that it only recalculates when specific dependencies change. The name comes from "memoization," which is a technique to store the results of expensive function calls and return the cached result when the same inputs occur again.
+  // const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+  //       ^ the result                   ^ the calculation            ^ dependencies
   // Sort and filter data
   const filteredAndSortedData = useMemo(() => {
-    // First, filter the data
+    // First, filter the data by making a copy of the tasks array so we don't mutate the original data.
     let filteredData = [...tasks];
 
+    // These are the filter conditions. If the filterConfig has a value, then filter the data by that value.
+    // (task.category?.name || "No Category") handles the case where task.category might be null
+    // The ?. is the optional chaining operator - it allows you to safely access deeply nested properties without having to check if each reference in the chain is null or undefined.
     if (filterConfig.category) {
       filteredData = filteredData.filter(
         (task) =>
@@ -164,11 +143,12 @@ const MainTasks: React.FC = () => {
       );
     }
 
-    // Then, sort the filtered data
+    // Then, sort the filtered data - it only runs if the sortConfig is not null.
     if (sortConfig) {
       filteredData.sort((a, b) => {
-        // Handle special case for category.name
+        // Handle special case for category.name since it's a nested property
         if (sortConfig.key === "category.name") {
+          // Grab a value and then the next value in the array, compare them and order they should be in.
           const aValue = a.category?.name || "No Category";
           const bValue = b.category?.name || "No Category";
 
@@ -182,6 +162,7 @@ const MainTasks: React.FC = () => {
         }
 
         // Handle all other fields
+        // Refer to below and: we are telling the compiler that the sortConfig.key is a valid key of the Task interface.  It allows us to use bracket notation to access the property of the object based on a variable.
         const aValue = a[sortConfig.key as keyof Task] as string;
         const bValue = b[sortConfig.key as keyof Task] as string;
 
@@ -199,6 +180,16 @@ const MainTasks: React.FC = () => {
   }, [tasks, sortConfig, filterConfig]);
 
   // Handle sorting
+  // The keyof operator is a TypeScript feature that creates what's called an "index type" or "key type." It produces a union type of all the property names (keys) of a given type.
+  // So, if we have:
+  // interface Person {
+  //   name: string;
+  //   age: number;
+  //   email: string;
+  // }
+  // Then keyof Person would evaluate to the union type: "name" | "age" | "email"
+  // The variable can only be one of the key types.
+  // This ensures that the sorting can only be done on valid keys of the Task interface.
   const handleSort = (key: keyof Task | "category.name") => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig?.key === key && sortConfig.direction === "asc") {
@@ -424,6 +415,11 @@ const MainTasks: React.FC = () => {
         </thead>
         <tbody>
           {/* {tasks.map((task) => ( */}
+          {/* Ok, so once ALL of this is set up, we need to wrap our actual table
+          in a useMemo() hook. This will ensure that the table only re-renders
+          when the tasks, sortConfig, or filterConfig change. This is a
+          performance optimization that can help reduce unnecessary re-renders
+          and improve the overall performance of the component. */}
           {filteredAndSortedData.length > 0 ? (
             filteredAndSortedData.map((task) => (
               <TableRow
