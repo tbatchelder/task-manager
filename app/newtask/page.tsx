@@ -93,86 +93,126 @@ const NewTask = () => {
   return (
     <>
       <NavBarTask />
-      <div className="max-w-xl">
+
+      <div className="max-w-3xl mx-auto px-4">
         {error && (
           <Callout.Root color="red" className="mb-5">
             <Callout.Text>{error}</Callout.Text>
           </Callout.Root>
         )}
+
         <form
-          className="space-y-3"
+          className="g-white rounded-lg shadow-md p-6"
           onSubmit={(e) => {
             e.preventDefault(); // Prevent default browser submission
             return onSubmit(e); // Call your handler
           }}
           noValidate // Disable browser validation to let React Hook Form handle it
         >
-          <TextField.Root
-            placeholder="Name"
-            {...register("name")}
-          ></TextField.Root>
-          <ErrorMessage>{errors.name?.message}</ErrorMessage>
+          <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">
+            Create a New Task
+          </h3>
+
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Task Name
+            </label>
+            <TextField.Root
+              placeholder="Enter task name"
+              {...register("name")}
+              className="w-full"
+            ></TextField.Root>
+            <ErrorMessage>{errors.name?.message}</ErrorMessage>
+          </div>
 
           {/* Gods - this was a nightmare - AI even had trouble figuring this one out.  Apparently you can't use just an input or select field inside one of the react-forms - you need a Controller around it ... now, what is a Controller? ... see below */}
           {/* This is odd though ... the react-hook-form site shows select should have been ok .... why wasn't it? */}
           {/* https://react-hook-form.com/docs/usecontroller/controller */}
-          <Controller
-            name="categoryId"
-            control={control}
-            defaultValue={0} // Start with undefined instead of empty string or 0
-            render={({ field }) => (
-              <Select.Root
-                value={field.value ? String(field.value) : ""}
-                onValueChange={(value) =>
-                  field.onChange(value ? parseInt(value, 10) : "")
-                }
-              >
-                <Select.Trigger color="cyan" placeholder="Select a category...">
-                  {/* Placeholder is on the Trigger component */}
-                </Select.Trigger>
-                <Select.Content color="cyan" position="popper">
-                  {categories.map((category) => (
-                    <Select.Item key={category.id} value={String(category.id)}>
-                      {category.name}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            )}
-          />
-          <ErrorMessage>{errors.categoryId?.message}</ErrorMessage>
-
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => (
-              <SimpleMDE placeholder="Description" {...field} />
-            )}
-          />
-          <ErrorMessage>{errors.description?.message}</ErrorMessage>
-
-          {/* Date Picker - this is a controlled component, so we need to use the Controller component from react-hook-form */}
-          <Controller
-            name="duedate"
-            control={control}
-            defaultValue={undefined} // Use undefined instead of null
-            render={({ field }) => (
-              <DatePicker
-                selected={field.value}
-                onChange={(date) => field.onChange(date)} // Convert null to undefined if needed
-                dateFormat="MM/dd/yyyy"
-                placeholderText="Select a due date"
-                className="w-full p-2 border rounded"
-                minDate={new Date()} // Prevent selecting past dates
+          {/* Two-column layout for category and due date */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <Controller
+                name="categoryId"
+                control={control}
+                defaultValue={0} // Start with undefined instead of empty string or 0
+                render={({ field }) => (
+                  <Select.Root
+                    value={field.value ? String(field.value) : ""}
+                    onValueChange={(value) =>
+                      field.onChange(value ? parseInt(value, 10) : "")
+                    }
+                  >
+                    <Select.Trigger
+                      color="cyan"
+                      placeholder="Select a category..."
+                      className="w-full"
+                    >
+                      {/* Placeholder is on the Trigger component */}
+                    </Select.Trigger>
+                    <Select.Content color="cyan" position="popper">
+                      {categories.map((category) => (
+                        <Select.Item
+                          key={category.id}
+                          value={String(category.id)}
+                        >
+                          {category.name}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                )}
               />
-            )}
-          />
-          <ErrorMessage>{errors.duedate?.message}</ErrorMessage>
+              <ErrorMessage>{errors.categoryId?.message}</ErrorMessage>
+            </div>
+
+            {/* Date Picker - this is a controlled component, so we need to use the Controller component from react-hook-form */}
+            {/* Make it full width in its cell */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Due Date
+              </label>
+              <Controller
+                name="duedate"
+                control={control}
+                defaultValue={undefined} // Use undefined instead of null
+                render={({ field }) => (
+                  <DatePicker
+                    selected={field.value}
+                    onChange={(date) => field.onChange(date)} // Convert null to undefined if needed
+                    dateFormat="MM/dd/yyyy"
+                    placeholderText="Select a due date"
+                    className="w-full p-1 border border-gray-300 rounded"
+                    minDate={new Date()} // Prevent selecting past dates
+                  />
+                )}
+              />
+              <ErrorMessage>{errors.duedate?.message}</ErrorMessage>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <SimpleMDE placeholder="Description" {...field} />
+              )}
+            />
+            <ErrorMessage>{errors.description?.message}</ErrorMessage>
+          </div>
 
           {/* Submit Button */}
-          <Button disabled={isSubmitting} type="submit">
-            Submit New Issue {isSubmitting && <Spinner />}
-          </Button>
+          <div className="flex justify-center">
+            <Button disabled={isSubmitting} type="submit" className="px-6 py-2">
+              Submit New Task {isSubmitting && <Spinner />}
+            </Button>
+          </div>
         </form>
       </div>
     </>

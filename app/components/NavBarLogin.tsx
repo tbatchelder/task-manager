@@ -10,7 +10,7 @@ const NavBarLogin = () => {
 
   return (
     <nav className="flex space-x-6 border-b mb-5 px-5 h-14 items-center">
-      <Link href="/">
+      <Link href="/" className="2x1">
         <GiUnicorn className="text-emerald-800 hover:text-emerald-600 transition-colors" />
       </Link>
       <div className="ml-auto text-emerald-500">

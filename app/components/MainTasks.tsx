@@ -270,193 +270,199 @@ const MainTasks: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto mt-4">
-      <h1 className="text-2xl font-bold mb-4">Your Tasks</h1>
-      {/* Filtering section */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg shadow-sm">
-        <h2 className="text-lg font-semibold mb-3">Filter Tasks</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+    <div className="container max-w-5xl mx-auto px-4">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">
+          Tasks
+        </h1>
+        {/* Filtering section */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg shadow-sm">
+          {/* <h2 className="text-lg font-semibold mb-3">Task Filters</h2> */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Search filter */}
+            <div>
+              {/* <label className="block text-sm font-medium text-gray-700 mb-1">
               Search
-            </label>
-            <input
-              type="text"
-              placeholder="Search name or description"
-              className="w-full p-2 border rounded-md"
-              value={filterConfig.searchTerm}
-              onChange={(e) => handleFilterChange("searchTerm", e.target.value)}
-            />
-          </div>
+            </label> */}
+              <input
+                type="text"
+                placeholder="Search name or description"
+                className="w-full p-1 border rounded-md"
+                value={filterConfig.searchTerm}
+                onChange={(e) =>
+                  handleFilterChange("searchTerm", e.target.value)
+                }
+              />
+            </div>
 
-          {/* Category filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            {/* Category filter */}
+            <div>
+              {/* <label className="block text-sm font-medium text-gray-700 mb-1">
               Category
-            </label>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={filterConfig.category}
-              onChange={(e) => handleFilterChange("category", e.target.value)}
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
+            </label> */}
+              <select
+                className="w-full p-1 border rounded-md"
+                value={filterConfig.category}
+                onChange={(e) => handleFilterChange("category", e.target.value)}
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Status filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            {/* Status filter */}
+            <div>
+              {/* <label className="block text-sm font-medium text-gray-700 mb-1">
               Status
-            </label>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={filterConfig.status}
-              onChange={(e) => handleFilterChange("status", e.target.value)}
-            >
-              <option value="">All Statuses</option>
-              {statuses.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-          </div>
+            </label> */}
+              <select
+                className="w-full p-1 border rounded-md"
+                value={filterConfig.status}
+                onChange={(e) => handleFilterChange("status", e.target.value)}
+              >
+                <option value="">All Statuses</option>
+                {statuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Owner filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            {/* Owner filter */}
+            <div>
+              {/* <label className="block text-sm font-medium text-gray-700 mb-1">
               Owner
-            </label>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={filterConfig.owner}
-              onChange={(e) => handleFilterChange("owner", e.target.value)}
+            </label> */}
+              <select
+                className="w-full p-1 border rounded-md"
+                value={filterConfig.owner}
+                onChange={(e) => handleFilterChange("owner", e.target.value)}
+              >
+                <option value="">All Owners</option>
+                {owners.map((owner) => (
+                  <option key={owner} value={owner}>
+                    {owner}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Reset filters button */}
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={resetFilters}
+              className="px-4 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
             >
-              <option value="">All Owners</option>
-              {owners.map((owner) => (
-                <option key={owner} value={owner}>
-                  {owner}
-                </option>
-              ))}
-            </select>
+              Reset Filters
+            </button>
           </div>
         </div>
 
-        {/* Reset filters button */}
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={resetFilters}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-          >
-            Reset Filters
-          </button>
+        {/* Results count */}
+        <div className="mb-4 text-gray-600">
+          Showing {filteredAndSortedData.length} of {tasks.length} tasks
         </div>
-      </div>
 
-      {/* Results count */}
-      <div className="mb-4 text-gray-600">
-        Showing {filteredAndSortedData.length} of {tasks.length} tasks
-      </div>
-
-      {/* Tasks table */}
-      <table className="table-auto w-full border-collapse border border-gray-300">
-        <thead>
-          <tr>
-            <th
-              className="border px-4 py-2 cursor-pointer"
-              onClick={() => handleSort("id")}
-            >
-              ID {getSortIndicator("id")}
-            </th>
-            <th
-              className="border px-4 py-2 cursor-pointer"
-              onClick={() => handleSort("owner")}
-            >
-              Owner {getSortIndicator("owner")}
-            </th>
-            <th
-              className="border px-4 py-2 cursor-pointer"
-              onClick={() => handleSort("category")}
-            >
-              Category {getSortIndicator("category.name")}
-            </th>
-            <th
-              className="border px-4 py-2 cursor-pointer"
-              onClick={() => handleSort("name")}
-            >
-              Name {getSortIndicator("name")}
-            </th>
-            <th
-              className="border px-4 py-2 cursor-pointer"
-              onClick={() => handleSort("description")}
-            >
-              Description {getSortIndicator("description")}
-            </th>
-            <th
-              className="border px-4 py-2 cursor-pointer"
-              onClick={() => handleSort("status")}
-            >
-              Status {getSortIndicator("status")}
-            </th>
-            <th
-              className="border px-4 py-2 cursor-pointer"
-              onClick={() => handleSort("duedate")}
-            >
-              Due Date {getSortIndicator("duedate")}
-            </th>
-            <th className="border px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {/* {tasks.map((task) => ( */}
-          {/* Ok, so once ALL of this is set up, we need to wrap our actual table
+        {/* Tasks table */}
+        <table className="table-auto w-full border-collapse border border-gray-300">
+          <thead>
+            <tr>
+              <th
+                className="border px-4 py-2 cursor-pointer bg-sky-200 hover:text-sky-800 transition-colors"
+                onClick={() => handleSort("id")}
+              >
+                ID {getSortIndicator("id")}
+              </th>
+              <th
+                className="border px-4 py-2 cursor-pointer bg-sky-200 hover:text-sky-800 transition-colors"
+                onClick={() => handleSort("owner")}
+              >
+                Owner {getSortIndicator("owner")}
+              </th>
+              <th
+                className="border px-4 py-2 cursor-pointer bg-sky-200 hover:text-sky-800 transition-colors"
+                onClick={() => handleSort("category")}
+              >
+                Category {getSortIndicator("category.name")}
+              </th>
+              <th
+                className="border px-4 py-2 cursor-pointer bg-sky-200 hover:text-sky-800 transition-colors"
+                onClick={() => handleSort("name")}
+              >
+                Name {getSortIndicator("name")}
+              </th>
+              <th
+                className="border px-4 py-2 cursor-pointer bg-sky-200 hover:text-sky-800 transition-colors"
+                onClick={() => handleSort("description")}
+              >
+                Description {getSortIndicator("description")}
+              </th>
+              <th
+                className="border px-4 py-2 cursor-pointer bg-sky-200 hover:text-sky-800 transition-colors"
+                onClick={() => handleSort("status")}
+              >
+                Status {getSortIndicator("status")}
+              </th>
+              <th
+                className="border px-4 py-2 cursor-pointer bg-sky-200 hover:text-sky-800 transition-colors"
+                onClick={() => handleSort("duedate")}
+              >
+                Due Date {getSortIndicator("duedate")}
+              </th>
+              <th className="border px-4 py-2 bg-sky-200">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* {tasks.map((task) => ( */}
+            {/* Ok, so once ALL of this is set up, we need to wrap our actual table
           in a useMemo() hook. This will ensure that the table only re-renders
           when the tasks, sortConfig, or filterConfig change. This is a
           performance optimization that can help reduce unnecessary re-renders
           and improve the overall performance of the component. */}
-          {filteredAndSortedData.length > 0 ? (
-            filteredAndSortedData.map((task) => (
-              <TableRow
-                key={task.id}
-                id={task.id}
-                category={task.category?.name || "No Category"}
-                name={task.name}
-                description={task.description}
-                duedate={
-                  task.duedate
-                    ? new Date(task.duedate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    : "No Due Date"
-                } // ✅ Convert date for display
-                status={task.status}
-                owner={task.owner}
-                loggedInOwner={loggedInUser}
-                onEdit={() => handleEdit(task.id, task.owner)}
-                onClose={handleClose}
-                onDelete={handleDelete}
-              />
-            ))
-          ) : (
-            <tr>
-              <td
-                colSpan={7}
-                className="border px-4 py-8 text-center text-gray-500"
-              >
-                No tasks found matching your filters
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            {filteredAndSortedData.length > 0 ? (
+              filteredAndSortedData.map((task) => (
+                <TableRow
+                  key={task.id}
+                  id={task.id}
+                  category={task.category?.name || "No Category"}
+                  name={task.name}
+                  description={task.description}
+                  duedate={
+                    task.duedate
+                      ? new Date(task.duedate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "No Due Date"
+                  } // ✅ Convert date for display
+                  status={task.status}
+                  owner={task.owner}
+                  loggedInOwner={loggedInUser}
+                  onEdit={() => handleEdit(task.id, task.owner)}
+                  onClose={handleClose}
+                  onDelete={handleDelete}
+                />
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="border px-4 py-8 text-center text-gray-500"
+                >
+                  No tasks found matching your filters
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

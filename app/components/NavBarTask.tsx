@@ -3,9 +3,9 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { GiUnicorn } from "react-icons/gi";
+import { useUserContext } from "../context/UserContext";
 import classNames from "classnames";
 import Link from "next/link";
-import { useUserContext } from "../context/UserContext";
 
 const NavBarTask = () => {
   const currentPath = usePathname();
@@ -27,37 +27,45 @@ const NavBarTask = () => {
   };
 
   return (
-    <nav className="flex space-x-6 border-b mb-5 px-5 h-14 items-center">
-      <Link href="/">
-        <GiUnicorn />
-      </Link>
-      <ul className="flex space-x-6">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            className={classNames({
-              "text-emerald-900": link.href === currentPath,
-              "text-emerald-500": link.href !== currentPath,
-              "hover:text-emerald-800 transition-colors": true,
-            })}
-            href={link.href}
-          >
-            {link.label}
+    <>
+      {/* Left section with logo and navigation links */}
+      <nav className="flex justify-between space-x-6 border-b mb-5 px-5 h-14 items-center font-semibold">
+        <div className="flex items-center space-x-6">
+          <Link href="/" className="2x1">
+            <GiUnicorn />
           </Link>
-        ))}
-        <button
-          className="text-red-500 hover:text-red-700 transition-colors ml-auto"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
-      </ul>
+          <ul className="flex space-x-6">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                className={classNames({
+                  "text-sky-900": link.href === currentPath,
+                  "text-sky-500": link.href !== currentPath,
+                  "hover:text-sky-800 transition-colors": true,
+                })}
+                href={link.href}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </ul>
+        </div>
 
-      {/* Right side of the NavBar - NOTE: we need to use ` ... not ' for this to work.*/}
-      <div className="text-emerald-500">
-        {username ? `Logged in as: ${username}` : "User Not Logged In"}
-      </div>
-    </nav>
+        {/* Right section with username and logout button */}
+        <div className="flex items-center space-x-4">
+          {/* Right side of the NavBar - NOTE: we need to use ` ... not ' for this to work.*/}
+          <div className="text-emerald-500">
+            {username ? `Logged in as: ${username}` : "User Not Logged In"}
+          </div>
+          <button
+            className="text-red-500 hover:text-red-700 transition-colors ml-auto"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
+    </>
   );
 };
 
